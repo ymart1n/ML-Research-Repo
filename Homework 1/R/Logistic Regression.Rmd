@@ -8,7 +8,7 @@ head(mydata)
 summary(mydata)
 
 ## split training set and testing test
-train_sub = sample(nrow(mydata),0.7*nrow(mydata))
+train_sub = sample(nrow(mydata),0.75*nrow(mydata))
 
 train_data = mydata[train_sub,]
 test_data = mydata[-train_sub,]
