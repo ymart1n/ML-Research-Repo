@@ -1,0 +1,41 @@
+---
+output:
+  pdf_document: default
+  html_document: default
+---
+```{r,warning=FALSE}
+
+## read in data required
+mydata <- read.csv("https://stats.idre.ucla.edu/stat/data/binary.csv")
+
+## view the first few rows of the data
+head(mydata)
+summary(mydata)
+
+## split training set and testing test
+train_sub = sample(nrow(mydata),0.75*nrow(mydata))
+
+train_data = mydata[train_sub,]
+test_data = mydata[-train_sub,]
+
+## Build logistic regression model
+admission_logistic <- glm(admit ~ gre + gpa + rank, data = train_data, family = "binomial")
+
+summary(admission_logistic)
+```
+## ROC curve and AUC value
+```{r,warning=FALSE}
+## make predictions for test set
+fitted.results <- predict(admission_logistic,newdata=subset(test_data,type='response'))
+fitted.results <- ifelse(fitted.results > 0.5,1,0)
+misClasificError <- mean(fitted.results != test_data$admit)
+print(paste('Accuracy',1-misClasificError))
+
+#output confusion matrix
+table(test_data$admit,fitted.results,dnn=c("true value","prediction value"))   
+#plot ROC curve
+library(pROC)
+logistic_roc <- roc(test_data$admit,fitted.results)
+plot(logistic_roc, print.auc=TRUE, auc.polygon=TRUE, grid=c(0.1, 0.2),grid.col=c("green", "red"), max.auc.polygon=TRUE,auc.polygon.col="skyblue", print.thres=TRUE,main='Logistic Regression ROC Curve')
+```
+
