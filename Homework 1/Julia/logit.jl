@@ -72,3 +72,25 @@ fpr, tpr, thresholds = sklearn.roc_curve(prediction_df.y_actual, prediction_df.p
 # Plot ROC curve
 plot(fpr, tpr)
 title!("ROC curve")
+
+total = 0
+
+for i in 1:10000
+  using Lathe.preprocess: TrainTestSplit
+  train, test = TrainTestSplit(df,.75);
+  fm = @formula(admit ~ gre + gpa + rank)
+  logit = glm(fm, train, Binomial(), ProbitLink())
+  prediction = predict(logit,test)
+  prediction_class = [if x < 0.5 0 else 1 end for x in prediction];
+
+  prediction_df = DataFrame(y_actual = test.admit, y_predicted = prediction_class, prob_predicted = prediction);
+  prediction_df.correctly_classified = prediction_df.y_actual .== prediction_df.y_predicted
+
+  # Accuracy Score
+  accu = mean(prediction_df.correctly_classified)
+  total += accu
+end 
+
+# Avg Accuracy Score
+avgAccuracy = total/10000
+print("Average Accuracy of the model is : ", avgAccuracy)
