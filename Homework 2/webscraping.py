@@ -4,7 +4,20 @@ from bs4 import BeautifulSoup
 from requests.exceptions import RequestException
 import pprint
 
-def get_moive_data(movie_url):#爬取单部电影的数据
+
+def from_dict_to_movie(the_movie_dict):
+    return Movie(movie_id=the_movie_dict['ID'],
+                 name=the_movie_dict['Name'],
+                 released=the_movie_dict['Released'],
+                 year=the_movie_dict['Year'],
+                 score=the_movie_dict['Score'],
+                 rating_count=the_movie_dict['RatingCount'],
+                 director=the_movie_dict['Director']
+                )
+
+
+
+def get_moive_data(movie_url): # This function scrap the data of one single movie
     url = "http://www.imdb.com" + movie_url
     page_response = requests.request("GET", url)
     if page_response.status_code == 200:
@@ -44,13 +57,13 @@ def get_moive_data(movie_url):#爬取单部电影的数据
            director = None
     
        movie_data = {
-        'ID':movie_id, #电影ID号，int
-        'Name': name, #电影名称，string
-        'Released': released, #是否上映，bool
-        'Year':year, #上映年份，int，若未上映则返回None
-        'Score':score, #评分，float，如无评分则返回None
-        'RatingCount':ratingCount,    #评价人数，int，若无人数则返回None
-        'Director':director  #导演，string，若无导演则返回None
+        'ID':movie_id, # the id of movie in IMDb，int
+        'Name': name, # the name of movie，string
+        'Released': released, # movie is released or not，bool
+        'Year':year, # year of release，int，None if it has not been released 
+        'Score':score, # the rating score of movie，float，None if it has not been rated
+        'RatingCount':ratingCount, # the numebr of ratings，int，None if no rating
+        'Director':director # the name of director，string，None if no director
         }     
        return movie_data
    
@@ -74,17 +87,24 @@ def parse_page(base_url, page_url):#爬取每页的50部电影数据
             next_page = page['href']
     for link in links:
         movie_link = link.select_one('.lister-item-header').select_one('a')['href']
-        
-        data = get_moive_data(movie_link)
-        pprint.pprint(data)
-        ##这里依次输出每部电影的数据，具体格式见movie_data
+        try:
+            data = get_moive_data(movie_link)
+            from_dict_to_movie(data).save()
+        except requests.exceptions.RequestException as e:
+            print(e)
+            continue
     return next_page     
         
 def main():
     base_url = "https://www.imdb.com"
     page_url = "/search/title/?genres=comedy"
-    for i in range(10000):#爬取10000页即50w部电影数据，可自行修改
-        page_url = parse_page(base_url, page_url)
+    socket.setdefaulttimeout(20)
+    for i in range(10000): # Scaping 10,000 pages ~ 500,000 movies
+        try:
+            page_url = parse_page(base_url, page_url)
+        except requests.exceptions.RequestException as e:
+            print(e)
+            continue
 
         
   
