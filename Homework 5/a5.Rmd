@@ -1,0 +1,93 @@
+---
+output:
+  html_document: default
+  pdf_document: default
+---
+```{r}
+library(readr)
+library(jiebaR)
+
+## Read in the target file which consists of Chinese words
+test_string <- read_file("test1.txt")
+
+## Open the Chinese word separator 
+mixseg <- worker()
+## Show the results
+mixseg <= test_string
+```
+```{r}
+## Note that here it separates R from 语言, which means "Language" In ENGLISH, 
+## so we can add new words into our dictionary so next time it will know
+show_dictpath()
+## go into the path, find file "user.dict.utf8
+## Try again
+## Open the Chinese word separator 
+mixseg <- worker()
+## Show the results
+mixseg <= test_string
+
+## In addition, not only opening the word separator, but also tagging the characteristic of that word. Ex.Noun,Verb,Adj etc.
+tagger = worker("tag")
+## Show the results
+tagger <= test_string
+
+## Show the top 5 popular words
+keys = worker("keywords",topn = 5, idf = IDFPATH)
+keys <= test_string
+```
+
+
+```{r}
+library(pacman)
+p_load(jiebaR,tidyverse)
+
+## we can also store the result after the tagging process
+tag_result = tagging(test_string,tagger)
+## Show the results
+tag_result
+## view the data type
+str(tag_result) 
+## transfer the results into a table
+enframe(tag_result) -> tag_table  # change the way we store the data
+## show the table
+tag_table
+```
+
+```{r}
+## We now interested in the popularity of words based on noun,verb,adj etc respectively.
+
+## For example, We filtered all nouns in this file, store it in tag_names_n
+tagging(test_string,tagger) %>% 
+  enframe() %>% 
+  filter(name == "n") -> tag_names_n
+
+tag_names_n %>% 
+  ## count the number of nouns
+  count(value) %>%
+  ## sort them in descending order
+  arrange(desc(n))
+
+## We then filtered all verbs in this file, store it in tag_names_v
+tagging(test_string,tagger) %>% 
+  enframe() %>% 
+  filter(name == "v") -> tag_names_v
+
+tag_names_v %>% 
+  ## count the number of verbs
+  count(value) %>%
+  ## sort them in descending order
+  arrange(desc(n))
+
+## At last filtered all adjectives in this file, store it in tag_names_a
+tagging(test_string,tagger) %>% 
+  enframe() %>% 
+  filter(name == "a") -> tag_names_a
+
+tag_names_a %>% 
+  ## count the number of verbs
+  count(value) %>%
+  ## sort them in descending order
+  arrange(desc(n))
+
+
+```
