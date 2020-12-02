@@ -3,21 +3,6 @@ import os
 from PIL import Image, ImageTk
 import io
 
-"""
-Simple Image Browser based on PySimpleGUI
---------------------------------------------
-There are some improvements compared to the PNG browser of the repository:
-1. Paging is cyclic, i.e. automatically wraps around if file index is outside
-2. Supports all file types that are valid PIL images
-3. Limits the maximum form size to the physical screen
-4. When selecting an image from the listbox, subsequent paging uses its index
-5. Paging performance improved significantly because of using PIL
-Dependecies
-------------
-Python3
-PIL
-"""
-
 # Get the folder containin:g the images from the user
 folder = sg.popup_get_folder('Image folder to open', default_path='')
 if not folder:
